@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log xes.version="1.0" xmlns="http://www.xes-standard.org/">
+<trace><string key="concept:name" value="Application_01"/>
+<event>
+<string key="concept:name" value="O_Cancelled"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-01T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="W_Call after offers"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_2"/>
+<date key="time:timestamp" value="2016-01-01T09:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="O_Accepted"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-01T10:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_02"/>
+<event>
+<string key="concept:name" value="O_Accepted"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-02T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="O_Cancelled"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-02T09:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_03"/>
+<event>
+<string key="concept:name" value="O_Cancelled"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-03T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="O_Accepted"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_2"/>
+<date key="time:timestamp" value="2016-01-03T09:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="O_Cancelled"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-03T10:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_04"/>
+<event>
+<string key="concept:name" value="O_Accepted"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-04T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="O_Cancelled"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-04T09:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="O_Accepted"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_3"/>
+<date key="time:timestamp" value="2016-01-04T10:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_05"/>
+<event>
+<string key="concept:name" value="O_Cancelled"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-05T08:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_06"/>
+<event>
+<string key="concept:name" value="O_Create Offer"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_1"/>
+<date key="time:timestamp" value="2016-01-06T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="O_Refused"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_2"/>
+<date key="time:timestamp" value="2016-01-06T09:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_07"/>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="schedule"/>
+<date key="time:timestamp" value="2016-01-07T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="schedule"/>
+<date key="time:timestamp" value="2016-01-07T09:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_4"/>
+<date key="time:timestamp" value="2016-01-07T10:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_08"/>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_4"/>
+<date key="time:timestamp" value="2016-01-08T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_5"/>
+<date key="time:timestamp" value="2016-01-08T09:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_09"/>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_4"/>
+<date key="time:timestamp" value="2016-01-09T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="complete"/>
+<string key="org:resource" value="User_4"/>
+<date key="time:timestamp" value="2016-01-09T09:00:00.000+00:00"/>
+</event>
+</trace>
+<trace><string key="concept:name" value="Application_10"/>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="complete"/>
+<date key="time:timestamp" value="2016-01-10T08:00:00.000+00:00"/>
+</event>
+<event>
+<string key="concept:name" value="W_Assess Potential Fraud"/>
+<string key="lifecycle:transition" value="complete"/>
+<date key="time:timestamp" value="2016-01-10T09:00:00.000+00:00"/>
+</event>
+</trace>
+</log>
