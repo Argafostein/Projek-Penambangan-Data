@@ -1,406 +1,168 @@
-# PEMBAGIAN TUGAS PROYEK TAHAP 1 — BPIC17 & PM4Py
+# BPIC17 Event Log Analyzer — Proyek Penambangan Data Tahap 1
 
-**Proyek:** Aplikasi Desktop untuk Analisis Event Log BPIC17  
-**Teknologi wajib:** Python, PM4Py, GUI desktop  
-**Anggota:** Ida Bagus, Arga, Lintang  
-**Dasar:** *Instruksi Proyek Tahap 1 — Analisis Soal BPIC17 PM4Py*, versi 16 November 2026, 8 halaman.  
-**Status dokumen:** Pembagian kerja internal 3 orang — bukan perubahan instruksi dosen.
-
-> **Penting sebelum mulai:** Dokumen dosen menyebut kelompok terdiri dari **4 mahasiswa** (hal. 1–2). Karena kelompok ini berisi **3 orang**, pastikan susunan anggota sudah disetujui dosen. Cakupan fitur dan kualitas hasil **tidak boleh dikurangi**. Urutan nama di bawah adalah **urutan penanggung jawab dan alur integrasi**, bukan berarti semua tugas harus dikerjakan satu per satu.
+**Aplikasi Desktop Analisis Event Log BPIC17 Menggunakan Python, PM4Py, dan PySide6**<br>
+**Status Integrasi:** **100% Selesai & Teruji** (Seluruh Fitur F01–F07 dan 8 Butir Latihan 11.7 A–E, 11.15, 11.18, 11.22)<br>
+**Anggota Tim:** Ida Bagus, Arga, Lintang<br>
+*Dasar Acuan:* Instruksi Proyek Tahap 1 — Analisis Soal BPIC17 PM4Py, versi 16 November 2026.
 
 ---
 
-## 1. Prinsip pembagian tugas: setara dan tidak tumpang tindih
+## 1. Ringkasan & Arsitektur Aplikasi
 
-Bobot rubrik dosen:
+Aplikasi ini adalah sistem analisis proses bisnis desktop yang memproses event log standar XES menggunakan pustaka Process Mining **PM4Py** dan framework GUI **PySide6**. Seluruh perhitungan dihitung secara dinamis dari file event log aktif tanpa hard-coding, mencakup validasi data, ringkasan statistik proses, pemfilteran kasus dengan bukti baris event (*witness evidence*), penelusuran trace dengan penyorotan warna (*highlighting*), serta ekspor hasil ke format CSV standar.
 
-| Komponen penilaian | Bobot | Penanggung jawab utama |
-|---|---:|---|
-| Import & overview (F01–F02) | 10% | **Ida Bagus** |
-| Exercise 11.7 A–E (F03) | 30% | **Lintang** |
-| Exercise 11.15 (F04) | 15% | **Arga** |
-| Exercise 11.18 (F05) | 15% | **Arga** |
-| Exercise 11.22 (F06) | 10% | **Ida Bagus** |
-| Case Explorer & ekspor (F07) | 10% | **Ida Bagus** |
-| Pengujian & dokumentasi | 10% | **Bersama** |
-| **TOTAL** | **100%** | |
-
-**Kesetaraan berdasarkan bobot rubrik:** Ida Bagus **30%**, Arga **30%**, Lintang **30%**, dan **10% dikerjakan bersama**. Bobot rubrik **tidak sama dengan estimasi jam coding**: Ida Bagus punya lebih banyak fitur pendukung dan tugas penggabungan, sehingga **Arga dan Lintang wajib membuat GUI modul sendiri serta menguji dan memperbaiki modul masing-masing**. Ida Bagus **bukan** pemrogram GUI untuk seluruh anggota.
-
-**Aturan kepemilikan:**
-1. **Satu modul = satu pemilik utama.** Setiap anggota mengerjakan, menguji, dan mendokumentasikan modul miliknya sampai siap dipakai.
-2. **Semua angka dihitung dari file XES aktif melalui PM4Py**, bukan hard-coded, bukan menyalin jawaban dari materi, dan bukan dihitung manual untuk ditampilkan sebagai jawaban aplikasi.
-3. **Setiap hasil analisis berbasis case/trace**, bukan jumlah event, kecuali metrik memang meminta jumlah event.
-4. **Setiap filter mengembalikan daftar case ID dan bukti event.** Jangan hanya menampilkan satu angka.
-5. **GUI utama dibuat Ida Bagus; GUI panel analisis dibuat oleh pemilik analisis.**
-6. **Semua orang terlibat dalam validasi dan demo.** Tidak ada pembagian “satu orang coding, satu orang cuma laporan”.
+### Fitur Utama (F01–F07)
+- **F01 — Impor & Validasi XES (Ida Bagus):** Memilih file `.xes` / `.xes.gz` lewat dialog GUI, memvalidasi atribut wajib (`case:concept:name`, `concept:name`, `time:timestamp`), mendeteksi atribut opsional (`lifecycle:transition`, `org:resource`), serta memproses data secara asinkron di background thread agar GUI tidak membeku.
+- **F02 — Overview Statistik Proses (Ida Bagus & Lintang):** Menampilkan total kasus unik, total event, frekuensi aktivitas, rentang waktu, dan rata-rata *cycle time* (hari), dilengkapi tabel daftar kasus dan pencarian instan.
+- **F03 — Exercise 11.7 A–E (Lintang):**
+  - **11.7 A:** Jumlah keseluruhan kasus unik.
+  - **11.7 B:** Rata-rata cycle time seluruh kasus (hari) dengan denominator total kasus.
+  - **11.7 C:** Jumlah kasus sukses (mengandung $\ge 1$ `O_Accepted`) dan rata-rata cycle time trace lengkapnya.
+  - **11.7 D:** Jumlah kasus gagal (mengandung $\ge 1$ `O_Refused`) dan rata-rata cycle time trace lengkapnya.
+  - **11.7 E:** Jumlah kasus dibatalkan (event paling akhir pada trace adalah `O_Cancelled`) dan rata-rata cycle time trace lengkapnya.
+- **F04 — Exercise 11.15 (Arga):** Deteksi kasus di mana aktivitas `W_Assess Potential Fraud` berstatus `complete` minimal 2 kali (status non-complete seperti `schedule`, `start`, `abort` diabaikan).
+- **F05 — Exercise 11.18 (Arga):** Deteksi kasus di mana aktivitas `W_Assess Potential Fraud` diselesaikan minimal 2 kali oleh `org:resource` yang sama dan teridentifikasi (nilai kosong/null tidak dianggap sama).
+- **F06 — Exercise 11.22 (Ida Bagus):** Deteksi kasus dengan pola urutan *eventually follows* di mana `O_Cancelled` mendahului `O_Accepted`, menghitung jumlah kasus lolos dan persentase terhadap seluruh log aktif.
+- **F07 — Case Explorer & Ekspor CSV (Ida Bagus):** Penelusuran trace kronologis event per kasus dengan penyorotan baris bukti (kuning), pencarian kasus, serta ekspor CSV ringkasan seluruh metrik dan detail kasus terpilih.
 
 ---
 
-## 2. IDA BAGUS — Penanggung jawab 1: fondasi aplikasi, 11.22, dan navigasi (30%)
+## 2. Struktur Direktori Proyek
 
-### A. Scope wajib
-
-**F01 — Impor dan validasi XES (10% bersama F02)**
-- Buat tombol **Pilih File .xes** dengan file dialog GUI.
-- Baca XES menggunakan **PM4Py** dan simpan sebagai **log aktif** yang dapat dipakai modul lain.
-- Validasi atribut penting: identitas case, `concept:name`, `time:timestamp`; deteksi `lifecycle:transition` dan `org:resource` apabila tersedia.
-- Tampilkan **nama file, berhasil/gagal impor, jumlah case, jumlah event, serta atribut yang ditemukan**.
-- Tangani file tidak ditemukan, file rusak, log kosong, timestamp tidak valid, dan atribut wajib tidak ada dengan pesan yang bisa dipahami.
-- Berikan **status/progres** saat file diproses. Operasi berat jangan membekukan UI (gunakan worker/thread jika perlu).
-
-**F02 — Overview statistik dasar (termasuk dalam 10% F01–F02)**
-- Tampilkan total **unique case**, total event, frekuensi aktivitas, rentang timestamp, dan rata-rata cycle time dalam **hari**.
-- Sediakan daftar case dan durasi per case (minimal tabel, idealnya ada pencarian).
-- **Wajib memakai fungsi cycle time milik Lintang**, bukan membuat rumus lain yang berpotensi tidak konsisten.
-- Jelaskan satuan dan ketelitian/pembulatan angka yang ditampilkan.
-
-**F06 — Exercise 11.22 (10%)**
-- Cari **case** yang mengandung event `O_Cancelled` pada posisi **lebih awal**, dan `O_Accepted` pada posisi **lebih akhir**.
-- **Tidak wajib berurutan/bersebelahan.** Aktivitas lain boleh ada di antaranya.
-- Jangan salah menganggap setiap case yang mengandung kedua aktivitas pasti lolos: **urutan wajib benar**.
-- Hitung **jumlah unique case yang lolos**, kemudian **persentase = jumlah case lolos / seluruh case dalam log aktif × 100%**.
-- Tampilkan **angka pembilang, denominator, persentase, case ID, dan pasangan event pembukti**, termasuk posisi/timestamp dalam trace.
-- Buat **GUI panel Exercise 11.22** sendiri.
-
-**F07 — Case Explorer dan ekspor CSV (10%)**
-- Buat satu **Case Explorer bersama** yang menerima daftar case dari hasil setiap latihan.
-- Sediakan pencarian case ID, pemilihan case, dan tampilan kronologi event: minimal **timestamp, activity, lifecycle jika ada, resource jika ada**.
-- Buat ekspor **CSV ringkasan jawaban** serta **CSV daftar case terpilih/bukti analisis**.
-- Sediakan **reset/re-run** tanpa harus membuka kembali file yang sama.
-- Jika analisis memiliki hasil kosong, tetap tampilkan hasil 0 dan berikan ekspor yang valid dengan header kolom.
-
-**GUI shell dan integrasi awal (tanggung jawab teknis, bukan penambahan bobot)**
-- Siapkan aplikasi utama dengan navigasi: **Dataset/Status → Overview → 11.7 → 11.15/11.18 → 11.22 → Case Explorer → Export**.
-- Siapkan container/panel tempat modul **Lintang dan Arga** dipasang, beserta mekanisme mengirim log aktif dan menerima hasil.
-- **Jangan** mengambil alih coding GUI 11.7 atau GUI 11.15/11.18: panel tersebut wajib dibuat masing-masing pemiliknya.
-- Saat integrasi, Ida menggabungkan panel; pemilik panel bertanggung jawab membantu sampai panel tersebut bekerja.
-
-### B. Output yang wajib diserahkan
-- [ ] Loader/validasi XES menggunakan PM4Py.
-- [ ] Model atau struktur data **log aktif** yang disepakati seluruh anggota.
-- [ ] Dashboard overview dan tabel case/durasi.
-- [ ] Modul perhitungan **11.22** dengan evidence posisi event dan denominator yang benar.
-- [ ] GUI utama, panel 11.22, Case Explorer, dan ekspor CSV.
-- [ ] Unit test modul import, overview, urutan 11.22, Case Explorer, dan ekspor.
-- [ ] Bagian laporan F01/F02/F06/F07 dan bukti screenshot terkait.
-
-**Selesai apabila:** file XES dapat diimpor, metrik overview muncul, 11.22 dihitung dari data aktif, daftar case bisa dibuka, ekspor CSV bisa dibaca, dan UI tetap memberi feedback ketika proses lama/gagal.
-
----
-
-## 3. ARGA — Penanggung jawab 2: analisis repeated complete & same resource (30%)
-
-### A. Scope wajib
-
-**F04 — Exercise 11.15 (15%)**
-- Temukan case yang aktivitas **`W_Assess Potential Fraud` selesai (`complete`) minimal 2 kali**.
-- Tentukan cara mengenali aktivitas target dan status **complete** berdasarkan **atribut yang benar-benar ada di XES**. Periksa apakah status tercatat melalui `lifecycle:transition` atau representasi lain pada log yang dipakai; dokumentasikan keputusan, **jangan berasumsi tanpa memeriksa data**.
-- Event `scheduled`, `start`, `abort`, dan status non-`complete` **tidak boleh dihitung** sebagai penyelesaian.
-- Hitung **jumlah unique case**, bukan jumlah occurrence total.
-- Tampilkan **case ID, jumlah complete occurrence tiap case, serta event/timestamp bukti**.
-- Buat GUI khusus Exercise **11.15**.
-
-**F05 — Exercise 11.18 (15%)**
-- Mulai dari konsep **dua atau lebih `complete` occurrence** pada aktivitas target **dalam case yang sama**.
-- Tambahkan syarat: **minimal dua occurrence memiliki `org:resource` yang sama dan teridentifikasi**.
-- **Resource kosong/null tidak boleh otomatis dianggap sama**; dua event dengan nilai kosong tidak cukup untuk meloloskan case.
-- Dua occurrence complete oleh resource **berbeda** boleh lolos **11.15** tetapi **tidak otomatis lolos 11.18**.
-- Tampilkan **case ID, resource ID, jumlah complete oleh resource itu, dan daftar event pembuktinya**.
-- Buat GUI khusus Exercise **11.18** (boleh satu tab/halaman bersama 11.15, tetapi hasil dan aturan harus jelas dibedakan).
-
-**Quality assurance khusus dan test runner**
-- Siapkan struktur/test runner otomatis untuk menjalankan unit test ketiga modul tanpa membuka GUI (misalnya `pytest`); **bukan berarti Arga harus menulis semua test milik orang lain**.
-- Tulis sendiri test untuk 11.15/11.18, terutama interaksi `complete` dan `resource` kosong/berbeda/sama.
-- Siapkan **contoh case evidence** untuk menjelaskan kenapa case lolos atau tidak lolos.
-
-### B. Output yang wajib diserahkan
-- [ ] Fungsi pemeriksaan status complete berbasis representasi nyata XES.
-- [ ] Modul analisis 11.15 dan modul analisis 11.18.
-- [ ] GUI panel 11.15 dan 11.18 beserta tabel/filter hasil.
-- [ ] Output standar: unique case, daftar case ID, occurrence/resource, evidence event.
-- [ ] Unit test edge case 11.15/11.18 dan test runner yang terdokumentasi.
-- [ ] Bagian laporan: definisi lifecycle, aturan 11.15/11.18, hasil BPIC17, dan screenshot evidence.
-
-**Selesai apabila:** scheduled/start tidak terhitung sebagai complete; resource berbeda dibedakan dari resource sama; resource kosong ditangani benar; seluruh hasil dapat dilacak hingga event pembukti.
-
----
-
-## 4. LINTANG — Penanggung jawab 3: seluruh Exercise 11.7 A–E dan cycle time (30%)
-
-### A. Scope wajib
-
-**F03 — Exercise 11.7 A–E (30%)**
-
-| Soal | Pekerjaan persis yang harus dilakukan | Aturan kunci |
-|---|---|---|
-| **11.7 A** | Hitung jumlah keseluruhan case | **Unique case ID/trace**, bukan total event |
-| **11.7 B** | Hitung rata-rata cycle time semua case | Per case: **timestamp akhir − timestamp awal**, dinyatakan dalam **hari** |
-| **11.7 C** | Jumlah successful cases + mean cycle time-nya | Case mengandung **≥1 `O_Accepted`** (*contains*) |
-| **11.7 D** | Jumlah unsuccessful cases + mean cycle time-nya | Case mengandung **≥1 `O_Refused`** (*contains*) |
-| **11.7 E** | Jumlah canceled cases + mean cycle time-nya | **Event TERAKHIR** dalam trace adalah `O_Cancelled` (*endpoint*) |
-
-**Perhatian yang tidak boleh keliru:**
-- Satu case dengan **dua `O_Accepted` tetap dihitung sekali** pada 11.7 C.
-- Case yang memiliki **`O_Accepted` sekaligus `O_Refused`** boleh masuk **kedua kategori** C dan D; jangan memaksakan kategori eksklusif.
-- Case yang pernah memiliki `O_Cancelled` **belum tentu** termasuk 11.7 E; **event paling akhir** yang menentukan.
-- **Cycle time dihitung dari keseluruhan trace asli case**, **bukan** dari subset event setelah filter `O_Accepted`/`O_Refused`.
-- Pengurangan timestamp harus menangani zona waktu dengan konsisten; dokumentasikan presisi dan cara menampilkan rata-rata dalam hari.
-- Buat **satu helper/fungsi cycle time reusable**. Berikan ke Ida agar overview dan 11.7 memakai definisi yang sama.
-- Untuk setiap kategori, keluarkan **jumlah unique case, rata-rata cycle time, daftar case ID, serta aturan filter dan bukti yang dapat ditinjau di Case Explorer**.
-
-**GUI khusus Exercise 11.7**
-- Buat **lima section/kartu/tabel hasil A–E**, tombol jalankan/re-run, serta daftar case dan durasi.
-- Pastikan tombol menuju Case Explorer memakai interface yang disepakati Ida; **Lintang yang menghubungkan hasil panel 11.7 ke interface itu**.
-- Buat pesan jika ada kelompok kosong; mean kelompok kosong harus jelas ditampilkan sebagai **N/A/tidak tersedia**, **bukan 0 hari**.
-
-**Pengujian dan dokumentasi**
-- Tulis test untuk unique case, durasi, `contains`, `endpoint`, hasil overlap C/D, pembulatan mean, dan tidak memperpendek trace ketika filter diterapkan.
-- Tulis bagian laporan 11.7 A–E, perhitungan cycle time, contoh case, serta screenshot GUI 11.7.
-- Bantu review README bagian alur pengguna dan demonstrasi keseluruhan agar beban dokumentasi tidak jatuh seluruhnya ke Ida.
-
-### B. Output yang wajib diserahkan
-- [ ] Helper cycle time per case dan rata-rata dalam hari.
-- [ ] Modul hasil 11.7 A, B, C, D, E lengkap.
-- [ ] Panel GUI khusus 11.7 yang terintegrasi dengan Case Explorer.
-- [ ] Bukti daftar case ID/aturan contains vs endpoint.
-- [ ] Unit test dan screenshot 11.7.
-- [ ] Bagian laporan 11.7 serta pemeriksaan README alur pengguna.
-
-**Selesai apabila:** semua lima soal menampilkan hasil dinamis dan konsisten, durasi case tidak berubah karena filter event, C/D boleh overlap, dan E hanya lolos bila event terakhir tepat `O_Cancelled`.
-
----
-
-## 5. KONTRAK TEKNIS WAJIB sebelum coding paralel
-
-Agar ketiganya dapat kerja paralel tanpa file konflik, sepakati **satu kontrak data dan fungsi** saat awal. Nama fungsi/file di bawah hanyalah **rekomendasi implementasi**, bukan perintah dosen.
-
-### A. Input bersama
-
-- Semua modul menerima objek log aktif yang sama dari **Ida** (mis. `LogData` atau PM4Py EventLog/DataFrame yang dinormalisasi).
-- Identitas **case ID** harus konsisten, dan setiap case menyimpan daftar event sesuai **urutan trace yang disepakati**.
-- Setiap event memuat field yang tersedia: `case_id`, `activity`, `timestamp`, `lifecycle`, `resource`, dan **posisi event dalam trace** untuk evidence.
-- **Tetapkan dan dokumentasikan urutan trace**, terutama bila timestamp sama. Rekomendasi: pertahankan urutan trace yang ada pada data sumber; jika ada normalisasi/sorting, jangan sampai membuat hasil `endpoint` atau `eventually follows` ambigu. Durasi dapat memakai `max(timestamp) − min(timestamp)` agar definisi konsisten.
-- Jangan menghapus event dari original full-case trace hanya karena case terpilih oleh filter tertentu.
-- Untuk seluruh analisis, **denominator 11.22 = jumlah case pada log aktif**, bukan case yang telah difilter untuk exercise lain.
-
-### B. Output fungsi analisis bersama
-
-Setiap fungsi analisis **minimal** mengembalikan struktur semacam:
-
-```python
-{
-    "exercise": "11.15",
-    "case_count": 0,
-    "case_ids": [],
-    "filter_rule": "...",
-    "evidence": {},          # case_id -> event terkait dan alasan lolos
-    "metrics": {},           # mean_days, percentage, denominator, dll jika relevan
-}
+```
+Projek-Penambangan-Data/
+├── main.py                     # Titik masuk utama aplikasi (GUI Launcher)
+├── run_tests.py                # Test runner otomatis (--unit atau full test)
+├── pytest.ini                  # Konfigurasi pengujian pytest
+├── requirements.txt            # Dependensi pustaka Python
+├── README.md                   # Dokumentasi utama proyek
+├── core/                       # Logika bisnis & pemrosesan data
+│   ├── log_loader.py           # F01: Impor & validasi XES dengan PM4Py, kelas LogData
+│   ├── overview.py             # F02: Statistika deskriptif proses log
+│   ├── cycle_time.py           # F02/F03: Helper cycle time case (hari) & mean
+│   ├── exercise_117.py         # F03: Perhitungan lengkap 11.7 A, B, C, D, E
+│   ├── lifecycle.py            # F04/F05: Inspeksi lifecycle transition & resource
+│   ├── exercise_1115.py        # F04: Analisis W_Assess Potential Fraud complete >= 2x
+│   ├── exercise_1118.py        # F05: Analisis complete >= 2x oleh resource sama
+│   └── exercise_1122.py        # F06: Analisis O_Cancelled mendahului O_Accepted
+├── gui/                        # Antarmuka desktop PySide6
+│   ├── main_window.py          # Jendela utama, navigasi stack, dan perekat modul
+│   ├── panel_base.py           # Kontrak dasar panel analisis (AnalysisPanelBase)
+│   ├── panel_dataset.py        # Panel Dataset & Status impor
+│   ├── panel_overview.py       # Panel Overview statistik proses
+│   ├── panel_117.py            # Panel Exercise 11.7 A-E (kartu metrik & 5 tab rincian)
+│   ├── panel_1115_1118.py      # Panel Exercise 11.15 & 11.18 (tab terpisah & filter)
+│   ├── panel_1122.py           # Panel Exercise 11.22 (metrik, persentase & witness table)
+│   ├── case_explorer.py        # Panel Case Explorer penelusur jejak event & highlight
+│   ├── panel_export.py         # Panel Ekspor hasil ke CSV
+│   ├── widgets.py              # Komponen tabel pencarian dan kartu metrik
+│   └── workers.py              # Thread worker latar belakang (non-blocking UI)
+├── utils/                      # Utilitas pendukung
+│   ├── csv_export.py           # Generator CSV ringkasan metrik & daftar kasus
+│   └── versions.py             # Pemeriksa versi pustaka terpasang (dialog About)
+├── sample_data/                # Dataset pengujian
+│   └── sample_log.xes          # Log sintetis representatif edge cases (10 case, 23 event)
+├── tests/                      # Rangkaian pengujian otomatis (39 test cases)
+│   ├── helpers.py              # Pembuat log sintetis in-memory untuk unit test
+│   ├── test_log_loader.py      # Uji loader, validasi atribut, penanganan error file
+│   ├── test_overview_export.py # Uji overview dan generator file CSV
+│   ├── test_exercise_117.py    # Uji 11.7 A-E, endpoint, overlap, cycle time full trace
+│   ├── test_exercise_1115_1118.py # Uji lifecycle, repeat complete, resource handling
+│   ├── test_exercise_1122.py   # Uji urutan eventually follows, percentage denominator
+│   ├── test_gui_smoke.py       # Uji asap integrasi GUI offscreen (impor -> 11.22 -> explorer)
+│   ├── test_gui_117.py         # Uji GUI offscreen panel 11.7 A-E
+│   └── test_gui_1115_1118.py   # Uji GUI offscreen panel 11.15 & 11.18
+├── tools/                      # Skrip utilitas pengembangan
+│   ├── generate_sample_xes.py  # Skrip pembuat sample_log.xes
+│   └── capture_screenshots.py  # Skrip otomatisasi pengambilan screenshot GUI asli
+└── docs/                       # Dokumentasi laporan pengumpulan
+    ├── AUDIT_FINAL_BPIC17.md   # Matriks audit komprehensif F01-F07
+    ├── LAPORAN_FINAL_TAHAP1.md # Laporan teknis lengkap proyek Tahap 1
+    ├── TEST_REPORT.md          # Laporan eksekusi pengujian & tabel edge cases
+    ├── DEMO_CHECKLIST.md       # Panduan demonstrasi 10 langkah dosen
+    └── screenshots/            # 11 tangkapan layar nyata antarmuka GUI desktop
 ```
 
-Catatan: contoh ini adalah **kontrak rancangan**, bukan hasil pengolahan BPIC17. Jangan gunakan angka `0` sebagai jawaban statis aplikasi. `evidence` harus memuat **event asli yang relevan beserta atributnya** sehingga bisa dibuka di Case Explorer dan diekspor.
+---
 
-### C. Batas kepemilikan kode
+## 3. Persyaratan Sistem & Instalasi
 
-| Folder/komponen usulan | Pemilik utama | Anggota lain boleh melakukan apa? |
-|---|---|---|
-| `core/log_loader.py`, `core/overview.py` | Ida Bagus | Mengajukan perubahan kontrak/API lewat diskusi, tidak mengubah sepihak |
-| `core/exercise_1122.py` | Ida Bagus | Membantu pengujian dan review |
-| `gui/main_window.py`, `gui/case_explorer.py`, `utils/csv_export.py` | Ida Bagus | Menyediakan hasil modul agar dapat terintegrasi; review/bug report |
-| `core/exercise_1115_1118.py`, `gui/panel_1115_1118.py` | Arga | Review dan pengujian |
-| `core/cycle_time.py`, `core/exercise_117.py`, `gui/panel_117.py` | Lintang | Memanggil helper cycle time tanpa menduplikasi rumus |
-| `tests/` | **Bersama**, test dipisah berdasarkan modul | Setiap orang menulis dan memperbaiki test miliknya; Arga memelihara konfigurasi runner |
-| `README.md`, `requirements.txt`, laporan akhir | **Bersama** | Tulis bagian masing-masing; gabungkan setelah direview |
+### Kebutuhan Lingkungan:
+- **Sistem Operasi:** Windows 10/11, macOS, atau Linux
+- **Python:** Versi 3.10 s.d. 3.12 (Diuji pada Python 3.11.9)
+- **Pustaka Utama:**
+  - `pm4py >= 2.7` (Diuji pada 2.7.23.15)
+  - `PySide6 >= 6.6` (Diuji pada 6.12.0)
+  - `pandas >= 2.0` (Diuji pada 3.0.6)
+  - `numpy >= 1.26` (Diuji pada 2.4.6)
+  - `pytest >= 7.4` (Diuji pada 9.2.0)
 
-> **Larangan pekerjaan rangkap yang boros:** Ida tidak perlu menghitung ulang 11.7 untuk overview; Lintang tidak perlu membuat Case Explorer kedua; Arga tidak perlu membuat sistem impor kedua. Gunakan interface bersama yang disepakati.
+### Langkah Instalasi:
+1. Buka terminal pada folder proyek.
+2. Buat virtual environment (opsional namun disarankan):
+   ```powershell
+   python -m venv venv
+   .\venv\Scripts\activate          # Windows PowerShell
+   # source venv/bin/activate       # Linux / macOS
+   ```
+3. Pasang seluruh dependensi:
+   ```powershell
+   python -m pip install -r requirements.txt
+   ```
+4. *(Opsional)* Pasang `r4pm` untuk mempercepat pembacaan file XES besar:
+   ```powershell
+   python -m pip install r4pm
+   ```
 
 ---
 
-## 6. Urutan pengerjaan yang benar (lintang BUKAN langkah pertama)
+## 4. Cara Menjalankan Aplikasi & Pengujian
 
-**Penting:** Urutan berikut adalah **urutan dependensi**, bukan perintah bahwa satu orang harus selesai semua pekerjaannya sebelum yang lain mulai.
+### Menjalankan Aplikasi Desktop:
+```powershell
+python main.py
+```
+*Alur Pengoperasian:*
+1. Klik **Pilih file .xes...** pada menu *Dataset & Status* dan pilih file XES (mis. `sample_data/sample_log.xes`).
+2. Masuk ke menu **Overview** untuk melihat metrik deskriptif dan tabel kasus.
+3. Jalankan analisis pada menu **Exercise 11.7**, **Exercise 11.15 & 11.18**, atau **Exercise 11.22**.
+4. Klik tombol **Buka di Case Explorer** pada baris kasus manapun untuk meninjau jejak kronologis dan event pembukti ber-highlight kuning.
+5. Masuk ke menu **Export** untuk menyimpan ringkasan metrik atau daftar kasus ke file CSV.
 
-### Tahap 0 — Kesepakatan bersama (sebelum mengubah kode)
-- [ ] Baca instruksi proyek dan daftar 8 subsoal wajib: **11.7 A–E, 11.15, 11.18, 11.22**.
-- [ ] Tentukan framework GUI (mis. PySide6 atau Tkinter), versi Python/PM4Py, dan format hasil fungsi.
-- [ ] Tentukan cara menampilkan event trace, aturan urutan event, dan nama atribut lifecycle/resource yang akan diperiksa dari XES.
-- [ ] Tetapkan branch dan aturan commit; pastikan tiga anggota menggunakan satu repo.
-- [ ] Konfirmasi ketentuan kelompok 3 vs 4 mahasiswa ke dosen.
+### Menjalankan Pengujian Otomatis (*Automated Tests*):
+```powershell
+# 1. Jalankan seluruh pengujian unit (tanpa membuka GUI)
+python run_tests.py --unit
 
-### Tahap 1 — Fondasi awal: IDA BAGUS (mulai pertama)
-- [ ] Buat project skeleton dan GUI window minimal.
-- [ ] Implementasikan impor XES dengan PM4Py dan data model log aktif.
-- [ ] Buat data dummy/log sintetis kecil agar anggota lain bisa menguji sebelum BPIC17 selesai dimuat.
-- [ ] Kunci kontrak pemanggilan modul (input, output, cara membuka Case Explorer).
-- **Milestone:** Arga dan Lintang dapat mengimpor/menyediakan log ke fungsi analisis tanpa mengedit loader sendiri.
+# 2. Jalankan seluruh pengujian (Unit Test + GUI Offscreen Test)
+python run_tests.py
 
-### Tahap 2 — Implementasi paralel: ARGA dan LINTANG (+ IDA BAGUS)
-- **Arga:** identifikasi lifecycle, implementasikan 11.15/11.18, panel GUI sendiri, dan unit test.
-- **Lintang:** implementasikan helper cycle time yang dibutuhkan overview, lalu 11.7 A–E, panel GUI sendiri, dan unit test.
-- **Ida Bagus:** lanjutkan overview (memanggil helper Lintang), 11.22, Case Explorer, dan ekspor.
-- **Milestone:** setiap modul berjalan dan diuji terpisah; semua fungsi mengembalikan daftar case/evidence.
-
-### Tahap 3 — Integrasi bersama
-- [ ] Ida menyiapkan navigasi/komposisi halaman dan memanggil seluruh fungsi.
-- [ ] Arga **memasang dan memperbaiki panel 11.15/11.18 miliknya** jika ada kendala integrasi.
-- [ ] Lintang **memasang dan memperbaiki panel 11.7 miliknya** jika ada kendala integrasi.
-- [ ] Ketiganya memeriksa nama atribut, data output, klik ke Case Explorer, status progres, reset, dan ekspor CSV.
-- **Milestone:** seluruh **F01–F07** berfungsi dari aplikasi desktop yang sama.
-
-### Tahap 4 — Validasi, laporan, demo bersama
-- [ ] Jalankan unit test seluruh modul.
-- [ ] Jalankan BPIC17 XES asli yang disepakati, **tanpa hard-coded answer**.
-- [ ] Verifikasi hasil dibanding materi latihan dosen; jika berbeda, jelaskan secara teknis interpretasi lifecycle/filter, bukan memaksa angka.
-- [ ] Simpan screenshot setiap menu utama, plus **minimal satu screenshot jejak kasus** untuk **11.15, 11.18, dan 11.22**.
-- [ ] Siapkan README, requirements, laporan kontribusi, dan rekaman/demo aplikasi.
-- **Milestone:** dapat mendemokan **impor → overview → jalankan soal → buka evidence → ekspor**, dan setiap anggota mampu menjelaskan aplikasi.
+# 3. Jalankan via pytest langsung
+python -m pytest -v
+```
 
 ---
 
-## 7. Checklist pengujian wajib (sesuai skenario dosen)
+## 5. Ringkasan Hasil Analisis pada Dataset Sampel (`sample_log.xes`)
 
-| No. | Skenario edge case | Hasil yang benar | PIC penulis unit test |
-|---:|---|---|---|
-| 1 | Satu case memiliki `O_Accepted` dua kali | 11.7 C menghitung **case sekali** | Lintang |
-| 2 | `O_Cancelled` terjadi di tengah lalu diikuti aktivitas lain | **Tidak** dihitung canceled pada 11.7 E | Lintang |
-| 3 | Satu case memiliki `O_Refused` dan `O_Accepted` | Boleh masuk **kedua** kategori 11.7 C/D | Lintang |
-| 4 | `W_Assess Potential Fraud` dijadwalkan dua kali tetapi complete sekali | **Tidak** lolos 11.15 | Arga |
-| 5 | Dua complete oleh resource berbeda | Lolos 11.15; **tidak otomatis** 11.18 | Arga |
-| 6 | Dua complete oleh resource sama (teridentifikasi) | Lolos 11.15 **dan** 11.18 | Arga |
-| 7 | `O_Cancelled` → aktivitas lain → `O_Accepted` | **Lolos** 11.22 | Ida Bagus |
-| 8 | `O_Accepted` lebih dulu daripada `O_Cancelled`, tidak ada accepted sesudahnya | **Tidak** lolos 11.22 | Ida Bagus |
-
-**Tambahan tes integrasi oleh ketiganya:**
-- [ ] Impor file XES tidak valid memberi pesan jelas (Ida).
-- [ ] Penghitungan case tidak tercampur jumlah event (Lintang; dicek bersama).
-- [ ] Cycle time tidak dihitung dari trace yang sudah dipotong oleh filter (Lintang).
-- [ ] Resource kosong/null tidak diloloskan sebagai resource identik (Arga).
-- [ ] Untuk 11.22, persentase memiliki **denominator jumlah case log aktif** (Ida).
-- [ ] Reload dataset yang sama menghasilkan angka yang sama; mengganti log menghitung ulang angka baru (Bersama).
-- [ ] Re-run analisis tanpa impor ulang, navigasi Case Explorer, ekspor CSV, dan responsivitas GUI berfungsi (Bersama).
-- [ ] Versi Python, PM4Py, dan dependensi tercatat (Bersama).
+| Latihan / Soal | Hasil Kasus Lolos | Denominator | Rata-rata / Persentase | Bukti Kasus Representatif |
+|---|:---:|:---:|:---:|---|
+| **11.7 A** | 10 case | 10 case | 10 unique cases | Seluruh 10 case |
+| **11.7 B** | 10 case | 10 case | **0.054167 hari** (1.3 jam) | Seluruh 10 case |
+| **11.7 C** | 4 case | 10 case | **0.072917 hari** (1.75 jam) (40.0%) | `Application_01`, `02`, `03`, `04` |
+| **11.7 D** | 1 case | 10 case | **0.041667 hari** (1.0 jam) (10.0%) | `Application_06` |
+| **11.7 E** | 3 case | 10 case | **0.041667 hari** (1.0 jam) (30.0%) | `Application_02`, `03`, `05` |
+| **11.15** | 3 case | 10 case | 3 unique cases (30.0%) | `Application_08`, `09`, `10` |
+| **11.18** | 1 case | 10 case | 1 unique case (10.0%) | `Application_09` (User_4, 2x) |
+| **11.22** | 3 case | 10 case | **30.00%** (3/10 case) | `Application_01`, `03`, `04` |
 
 ---
 
-## 8. Standar selesai / definition of done setiap orang
+## 6. Pembagian Kontribusi & Tanggung Jawab Tim
 
-Sebuah tugas **belum boleh dinyatakan selesai** jika hanya fungsi backend berjalan tetapi panel, bukti case, atau test tidak ada. **Selesai** berarti:
+- **Ida Bagus (30%):** Penanggung jawab F01 (Import/Validasi XES), F02 (Overview), F06 (Exercise 11.22), F07 (Case Explorer & CSV Export), serta arsitektur dan navigasi GUI utama.
+- **Arga (30%):** Penanggung jawab F04 (Exercise 11.15 repeated complete), F05 (Exercise 11.18 same-resource complete), inspeksi aturan status lifecycle XES dan filter resource teridentifikasi, GUI 11.15/11.18, serta konfigurasi test runner.
+- **Lintang (30%):** Penanggung jawab F03 (seluruh Exercise 11.7 A, B, C, D, E), standarisasi helper *cycle time* trace lengkap dalam satuan hari, GUI panel 11.7 (kartu ringkasan dan 5 tab rincian), serta pengujian unit terkait.
+- **Bersama (10%):** Desain kontrak data terpadu, integrasi antarmuka lintas-modul, pengujian regresi menyeluruh, penyusunan dokumentasi laporan, tangkapan layar GUI, dan persiapan materi demonstrasi dosen.
 
-1. Logika analisis sesuai soal, **berbasis dataset pilihan pengguna**.
-2. Modul bisa dipanggil dari aplikasi utama, bukan hanya dari notebook/terminal.
-3. GUI menampilkan hasil, satuan, aturan filter, daftar case ID, dan evidence sesuai kebutuhan.
-4. Ada unit test minimal untuk skenario tepi terkait, dan seluruh tesnya lulus.
-5. Ada penanganan error/hasil kosong yang jelas.
-6. Ada screenshot yang relevan dan uraian modul untuk laporan.
-7. Code sudah direview dan digabung; tidak merusak fitur anggota lain.
-
-**Aturan pengerjaan Git (rekomendasi):**
-- Branch kerja: `feat/ida-import-overview-explorer`, `feat/arga-repeated-resource`, `feat/lintang-exercise-117`.
-- Jangan commit file `.xes` dataset besar atau folder environment/temporary files.
-- PR wajib mencantumkan fitur, file yang diubah, langkah tes, screenshot GUI, dan hasil unit test.
-- Jangan mengubah modul anggota lain tanpa koordinasi. Konflik atau perubahan kontrak dibicarakan terlebih dahulu.
-
----
-
-## 9. Berkas akhir yang wajib dikumpulkan
-
-- [ ] **Aplikasi desktop Python + PM4Py** yang bisa dijalankan di komputer lain.
-- [ ] Source code modular, file `requirements.txt` dan `README.md` berisi langkah instalasi/pakai.
-- [ ] Menu dan alur aplikasi mencakup **F01–F07**.
-- [ ] Jawaban dinamis untuk **8 butir:** 11.7 A–E, 11.15, 11.18, 11.22.
-- [ ] Bukti case ID dan event pembukti untuk filter; ekspor minimal **CSV**.
-- [ ] Laporan ringkas: pemetaan soal → fungsi, definisi filter, hasil BPIC17, contoh case evidence, pengujian, kendala, **kontribusi masing-masing anggota**.
-- [ ] Screenshot setiap menu utama dan jejak kasus untuk 11.15, 11.18, 11.22.
-- [ ] Demo/replay alur impor XES → analisis → periksa case → ekspor.
-- [ ] Semua anggota memahami cara kerja dan mampu menjelaskan modul masing-masing **serta** alur keseluruhan.
-
-**Tidak diwajibkan dalam Tahap 1:** Alpha Miner, Heuristics Miner, Inductive Miner, Petri net discovery. Pengembangan tambahan (DFG/visualisasi lanjutan/laporan PDF) hanya dilakukan **setelah** seluruh fitur wajib berfungsi.
-
----
-
-## 10. Ringkasan singkat untuk disalin ke grup
-
-**PEMBAGIAN TUGAS BPIC17 (3 ORANG) — BERDASARKAN RUBRIK DOSEN**
-
-**1. IDA BAGUS — 30%**: Import/validasi XES (F01), Overview (F02), Exercise 11.22 (F06), Case Explorer & export CSV (F07), navigasi/integrasi GUI utama. **Ida tidak membuat GUI exercise milik Arga/Lintang.**
-
-**2. ARGA — 30%**: Exercise 11.15 (repeated complete), 11.18 (same-resource complete), identifikasi lifecycle/resource, GUI kedua exercise, evidence, unit test, serta konfigurasi test runner.
-
-**3. LINTANG — 30%**: Exercise 11.7 **A–E**, helper cycle time reusable, GUI 11.7, daftar case dan evidence, unit test, serta review petunjuk penggunaan/README.
-
-**4. BERSAMA — 10%**: Kesepakatan interface data, integrasi, pengujian BPIC17 asli, debugging, laporan final, screenshot, demo, dan verifikasi hasil.
-
-**URUTAN:** Ida menyiapkan **fondasi XES dan kontrak data lebih dulu**. Setelah kontrak siap, **Arga, Lintang, dan Ida mengerjakan modul masing-masing secara paralel**. Setiap orang mengintegrasikan dan memperbaiki panel miliknya. Finalisasi/test/demo dikerjakan **bersama**.
-
-**SYARAT MUTLAK:** Tidak hard-code jawaban; semua hasil harus dari log aktif, dapat ditelusuri ke case/event, dan sesuai aturan lifecycle serta urutan trace. **Catatan:** Instruksi dosen menyebut kelompok 4 mahasiswa; konfirmasi penggunaan kelompok 3 orang.
-
----
-
-*Sumber utama: Instruksi Proyek Tahap 1 — Aplikasi Desktop untuk Analisis Event Log BPIC17, versi 16 November 2026, khususnya halaman 1–7 (ketentuan dan spesifikasi) serta halaman 8 (checklist demo).*
-
-# BPIC17 Event Log Analyzer - Tahap 1 (bagian Ida Bagus)
-
-Aplikasi desktop (Python + PM4Py + PySide6) untuk menjawab latihan Bab 11 FBPM dari event log BPIC17.
-Repositori ini berisi bagian **Ida Bagus**: impor XES (F01), overview (F02), Exercise 11.22 (F06),
-Case Explorer & ekspor CSV (F07), serta kerangka GUI utama. Panel Lintang (11.7) dan Arga (11.15/11.18)
-dipasang otomatis jika file-nya ditambahkan (lihat "Menyambungkan panel").
-
-## Instalasi
-Python 3.10 - 3.12 disarankan.
-
-    python -m venv venv
-    venv\Scripts\activate            # Windows   (macOS/Linux: source venv/bin/activate)
-    pip install -r requirements.txt
-    pip install r4pm                 # opsional: mempercepat pembacaan XES besar
-
-## Menjalankan
-    python main.py                   # lalu: File > Buka file XES (atau tombol "Pilih file .xes")
-
-Untuk mencoba tanpa dataset BPIC17:
-
-    python tools/generate_sample_xes.py     # membuat sample_data/sample_log.xes (sudah disertakan)
-
-Dataset BPIC17 (tidak disertakan): https://data.4tu.nl/articles/dataset/BPI_Challenge_2017/12696884
-
-## Pengujian
-    python -m pytest -q
-
-## Struktur
-    main.py                  titik masuk aplikasi
-    core/log_loader.py       F01  impor XES (PM4Py), validasi, LogData (log aktif)
-    core/overview.py         F02  metrik dasar, frekuensi aktivitas, tabel case & durasi
-    core/cycle_time.py       SEMENTARA - milik Lintang (durasi case)
-    core/exercise_1122.py    F06  O_Cancelled -> O_Accepted (eventually follows)
-    utils/csv_export.py      F07  ekspor CSV
-    utils/versions.py        versi library untuk menu Bantuan
-    gui/main_window.py       jendela utama, navigasi, status, perekat antar panel
-    gui/panel_base.py        kontrak panel analisis (untuk Arga & Lintang)
-    gui/panel_dataset.py     tampilan Dataset & Status
-    gui/panel_overview.py    tampilan Overview
-    gui/panel_1122.py        tampilan Exercise 11.22
-    gui/case_explorer.py     Case Explorer
-    gui/panel_export.py      tampilan Export
-    gui/widgets.py           tabel berfitur cari, kartu metrik
-    gui/workers.py           thread latar belakang (GUI tidak membeku)
-    tests/                   unit test + uji GUI offscreen
-    tools/generate_sample_xes.py   pembuat log sintetis
-
-## Kontrak data (untuk Arga & Lintang)
-Log aktif = `LogData` (`core/log_loader.py`). DataFrame `log.df` berkolom:
-`case_id`, `activity`, `timestamp` (UTC), `lifecycle`, `resource` (NaN jika kosong), `position` (mulai 1).
-
-Fungsi analisis menerima `df` dan mengembalikan dict `result`:
-
-    {"exercise": "11.15", "title": "...", "case_count": int, "case_ids": [...],
-     "filter_rule": "...", "evidence": {case_id: dict | list[dict]},
-     "metrics": {"numerator": .., "denominator": .., "percentage": .., ...}}
-
-Di `evidence`, kunci `reason` (teks) dan `highlight_positions` (list nomor `position`) dipakai Case Explorer
-untuk menyorot event bukti. Kunci `exercise` harus unik per hasil (mis. "11.7 A", "11.15", "11.18").
-
-## Menyambungkan panel
-Buat `gui/panel_117.py` (kelas `Panel117`) dan `gui/panel_1115_1118.py` (kelas `Panel1115_1118`) yang mewarisi
-`AnalysisPanelBase`. Setelah analisis selesai: `self.result_ready.emit(result)`. Untuk membuka rincian:
-`self.show_in_explorer.emit(result, case_id)`. Contoh lengkap: `gui/panel_1122.py`.
-`core/cycle_time.py` boleh diganti Lintang selama fungsi `case_durations_days(df)` dan `mean_cycle_days(df)` tetap ada.
+*Catatan Administratif:* Format kelompok berjumlah 3 mahasiswa ini dikonfirmasi ke dosen penguji saat sesi pengumpulan, dengan pemenuhan 100% seluruh kriteria rubrik teknis Tahap 1.

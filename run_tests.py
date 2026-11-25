@@ -21,7 +21,12 @@ def main(argv: list[str] | None = None) -> int:
 
     pytest_args = ["-v"]
     if unit_only:
-        pytest_args.extend(["--ignore=tests/test_gui_smoke.py", "--ignore=tests/test_gui_1115_1118.py"])
+        pytest_args.extend([
+            "--ignore=tests/test_gui_smoke.py",
+            "--ignore=tests/test_gui_1115_1118.py",
+            "--ignore=tests/test_gui_117.py",
+            "--ignore-glob=tests/test_gui_*.py",
+        ])
     pytest_args.extend(args)
 
     return pytest.main(pytest_args)
@@ -29,4 +34,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
