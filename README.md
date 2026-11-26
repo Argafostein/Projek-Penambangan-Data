@@ -26,7 +26,6 @@ Aplikasi ini adalah sistem analisis proses bisnis desktop yang memproses event l
 - **F07 — Case Explorer & Ekspor CSV (Ida Bagus):** Penelusuran trace kronologis event per kasus dengan penyorotan baris bukti (kuning), pencarian kasus, serta ekspor CSV ringkasan seluruh metrik dan detail kasus terpilih.
 
 ---
-
 ## 2. Struktur Direktori Proyek
 
 ```
